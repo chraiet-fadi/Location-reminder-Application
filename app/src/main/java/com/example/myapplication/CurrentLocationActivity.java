@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,6 +27,7 @@ public class CurrentLocationActivity extends AppCompatActivity {
 
     private TextView latitudeTextView;
     private TextView longitudeTextView;
+    private WebView mapWebView;
     private LocationManager locationManager;
 
     @Override
@@ -42,8 +44,16 @@ public class CurrentLocationActivity extends AppCompatActivity {
 
         latitudeTextView = findViewById(R.id.currentLatitudeTextView);
         longitudeTextView = findViewById(R.id.currentLongitudeTextView);
+        mapWebView = findViewById(R.id.currentLocationMapWebView);
         Button refreshButton = findViewById(R.id.refreshLocationButton);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        mapWebView.getSettings().setJavaScriptEnabled(true);
+        mapWebView.loadData(
+                "<html><body style='font-family:sans-serif;text-align:center;padding-top:40px;'>Waiting for GPS location...</body></html>",
+                "text/html",
+                "UTF-8"
+        );
 
         refreshButton.setOnClickListener(v -> loadCurrentGpsLocation());
         loadCurrentGpsLocation();
@@ -92,6 +102,22 @@ public class CurrentLocationActivity extends AppCompatActivity {
 
         latitudeTextView.setText(String.format(Locale.US, "Latitude: %.6f", location.getLatitude()));
         longitudeTextView.setText(String.format(Locale.US, "Longitude: %.6f", location.getLongitude()));
+        showLocationOnMap(location);
+    }
+
+    private void showLocationOnMap(Location location) {
+        double latitude = location.getLatitude();
+        double longitude = location.getLongitude();
+        String mapUrl = String.format(
+                Locale.US,
+                "https://www.openstreetmap.org/?mlat=%.6f&mlon=%.6f#map=17/%.6f/%.6f",
+                latitude,
+                longitude,
+                latitude,
+                longitude
+        );
+
+        mapWebView.loadUrl(mapUrl);
     }
 
     @Override
