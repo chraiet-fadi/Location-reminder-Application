@@ -7,6 +7,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,9 +47,19 @@ public class HomeActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_home);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        View mainView = findViewById(R.id.main);
+        int initialLeft = mainView.getPaddingLeft();
+        int initialTop = mainView.getPaddingTop();
+        int initialRight = mainView.getPaddingRight();
+        int initialBottom = mainView.getPaddingBottom();
+        ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            v.setPadding(
+                    initialLeft + systemBars.left,
+                    initialTop + systemBars.top,
+                    initialRight + systemBars.right,
+                    initialBottom + systemBars.bottom
+            );
             return insets;
         });
 
@@ -117,20 +128,27 @@ public class HomeActivity extends AppCompatActivity {
             return;
         }
 
-        if (locationManager == null || !locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+        if (locationManager == null) {
             reminderDistanceTextView.setText(R.string.gps_disabled);
-            Toast.makeText(this, "Please enable GPS to monitor reminders", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Location service is unavailable", Toast.LENGTH_LONG).show();
             return;
         }
 
         try {
-            Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            Location lastKnownLocation = getBestLastKnownLocation();
             if (lastKnownLocation != null) {
                 checkReminderDistance(lastKnownLocation);
             }
 
+            String provider = getBestEnabledProvider();
+            if (provider == null) {
+                reminderDistanceTextView.setText(R.string.gps_disabled);
+                Toast.makeText(this, "Please enable GPS or network location", Toast.LENGTH_LONG).show();
+                return;
+            }
+
             locationManager.requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER,
+                    provider,
                     5000,
                     5,
                     reminderLocationListener
@@ -146,6 +164,49 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         locationManager.removeUpdates(reminderLocationListener);
+    }
+
+    private Location getBestLastKnownLocation() {
+        Location gpsLocation = getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        Location networkLocation = getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
+        if (gpsLocation == null) {
+            return networkLocation;
+        }
+
+        if (networkLocation == null) {
+            return gpsLocation;
+        }
+
+        return gpsLocation.getTime() >= networkLocation.getTime() ? gpsLocation : networkLocation;
+    }
+
+    private Location getLastKnownLocation(String provider) {
+        if (locationManager == null || !locationManager.isProviderEnabled(provider)) {
+            return null;
+        }
+
+        try {
+            return locationManager.getLastKnownLocation(provider);
+        } catch (SecurityException e) {
+            return null;
+        }
+    }
+
+    private String getBestEnabledProvider() {
+        if (locationManager == null) {
+            return null;
+        }
+
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            return LocationManager.GPS_PROVIDER;
+        }
+
+        if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            return LocationManager.NETWORK_PROVIDER;
+        }
+
+        return null;
     }
 
     private void checkReminderDistance(Location currentLocation) {
