@@ -1,11 +1,15 @@
 package com.example.myapplication;
 
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -17,6 +21,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -27,12 +33,17 @@ import java.util.Locale;
 public class HomeActivity extends AppCompatActivity {
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 2001;
+    private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 2002;
+    private static final int REMINDER_NEAR_NOTIFICATION_ID = 100;
+    private static final String REMINDER_CHANNEL_ID = "reminder_location_alerts";
     private static final float REMINDER_RADIUS_METERS = 50f;
+    private static final float REMINDER_NOTIFICATION_RADIUS_METERS = 200f;
 
     private TextView reminderStatusTextView;
     private TextView reminderDistanceTextView;
     private LocationManager locationManager;
     private boolean reminderDialogShown;
+    private boolean reminderNotificationShown;
 
     private final LocationListener reminderLocationListener = new LocationListener() {
         @Override
@@ -70,6 +81,8 @@ public class HomeActivity extends AppCompatActivity {
         Button currentLocationButton = findViewById(R.id.currentLocationButton);
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        createReminderNotificationChannel();
+        requestNotificationPermissionIfNeeded();
 
         String userId = getIntent().getStringExtra("UserId");
         if (userId != null) {
@@ -86,6 +99,7 @@ public class HomeActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         reminderDialogShown = false;
+        reminderNotificationShown = false;
         updateReminderStatus();
         startReminderMonitoring();
     }
@@ -229,10 +243,84 @@ public class HomeActivity extends AppCompatActivity {
                 distance
         ));
 
+        if (distance <= REMINDER_NOTIFICATION_RADIUS_METERS && !reminderNotificationShown) {
+            reminderNotificationShown = true;
+            showNearReminderNotification(distance);
+        }
+
         if (distance <= REMINDER_RADIUS_METERS && !reminderDialogShown) {
             reminderDialogShown = true;
             showReminderReachedDialog();
         }
+    }
+
+    private void createReminderNotificationChannel() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return;
+        }
+
+        NotificationChannel channel = new NotificationChannel(
+                REMINDER_CHANNEL_ID,
+                "Location reminders",
+                NotificationManager.IMPORTANCE_HIGH
+        );
+        channel.setDescription("Alerts when you are close to a saved reminder location");
+
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        if (notificationManager != null) {
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    private void requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return;
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                    NOTIFICATION_PERMISSION_REQUEST_CODE
+            );
+        }
+    }
+
+    private void showNearReminderNotification(float distance) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        Intent intent = new Intent(this, HomeActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                this,
+                0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        String reminderTitle = ReminderStorage.getTitle(this);
+        String content = String.format(
+                Locale.US,
+                "You are %.0f meters from: %s",
+                distance,
+                reminderTitle
+        );
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, REMINDER_CHANNEL_ID)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("Reminder nearby")
+                .setContentText(content)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true);
+
+        NotificationManagerCompat.from(this).notify(REMINDER_NEAR_NOTIFICATION_ID, builder.build());
     }
 
     private void showReminderReachedDialog() {
@@ -254,6 +342,10 @@ public class HomeActivity extends AppCompatActivity {
             } else {
                 reminderDistanceTextView.setText(R.string.latitude_permission_denied);
                 Toast.makeText(this, "GPS permission denied", Toast.LENGTH_LONG).show();
+            }
+        } else if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Notification permission denied", Toast.LENGTH_LONG).show();
             }
         }
     }
