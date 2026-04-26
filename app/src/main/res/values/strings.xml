@@ -12,6 +12,9 @@
     <string name="longitude_unavailable">Longitude: unavailable</string>
     <string name="latitude_permission_denied">Latitude: permission denied</string>
     <string name="longitude_permission_denied">Longitude: permission denied</string>
+    <string name="no_reminder_saved">No reminder saved yet.</string>
+    <string name="distance_waiting">Distance to reminder: waiting for GPS...</string>
+    <string name="gps_disabled">GPS is disabled. Enable GPS to monitor reminders.</string>
 
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris

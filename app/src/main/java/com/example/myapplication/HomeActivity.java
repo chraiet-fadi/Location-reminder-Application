@@ -1,15 +1,19 @@
 package com.example.myapplication;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -22,10 +26,19 @@ import java.util.Locale;
 public class HomeActivity extends AppCompatActivity {
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 2001;
+    private static final float REMINDER_RADIUS_METERS = 50f;
 
-    private TextView latitudeTextView;
-    private TextView longitudeTextView;
+    private TextView reminderStatusTextView;
+    private TextView reminderDistanceTextView;
     private LocationManager locationManager;
+    private boolean reminderDialogShown;
+
+    private final LocationListener reminderLocationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(@NonNull Location location) {
+            checkReminderDistance(location);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,20 +52,61 @@ public class HomeActivity extends AppCompatActivity {
             return insets;
         });
 
-        TextView welcome = findViewById(R.id.welcomeTextView);
-        latitudeTextView = findViewById(R.id.latitudeTextView);
-        longitudeTextView = findViewById(R.id.longitudeTextView);
+        TextView welcomeTextView = findViewById(R.id.welcomeTextView);
+        reminderStatusTextView = findViewById(R.id.reminderStatusTextView);
+        reminderDistanceTextView = findViewById(R.id.reminderDistanceTextView);
+        Button addReminderButton = findViewById(R.id.addReminderButton);
+        Button currentLocationButton = findViewById(R.id.currentLocationButton);
+
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
         String userId = getIntent().getStringExtra("UserId");
         if (userId != null) {
-            welcome.setText(String.format(Locale.US, "Welcome %s", userId));
+            welcomeTextView.setText(String.format(Locale.US, "Welcome %s", userId));
         }
 
-        loadCurrentGpsLocation();
+        addReminderButton.setOnClickListener(v ->
+                startActivity(new Intent(HomeActivity.this, AddReminderActivity.class)));
+        currentLocationButton.setOnClickListener(v ->
+                startActivity(new Intent(HomeActivity.this, CurrentLocationActivity.class)));
     }
 
-    private void loadCurrentGpsLocation() {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        reminderDialogShown = false;
+        updateReminderStatus();
+        startReminderMonitoring();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopReminderMonitoring();
+    }
+
+    private void updateReminderStatus() {
+        if (!ReminderStorage.hasReminder(this)) {
+            reminderStatusTextView.setText(R.string.no_reminder_saved);
+            reminderDistanceTextView.setText(R.string.distance_waiting);
+            return;
+        }
+
+        reminderStatusTextView.setText(String.format(
+                Locale.US,
+                "Saved reminder: %s\nLatitude: %.6f\nLongitude: %.6f",
+                ReminderStorage.getTitle(this),
+                ReminderStorage.getLatitude(this),
+                ReminderStorage.getLongitude(this)
+        ));
+        reminderDistanceTextView.setText(R.string.distance_waiting);
+    }
+
+    private void startReminderMonitoring() {
+        if (!ReminderStorage.hasReminder(this)) {
+            return;
+        }
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
@@ -64,37 +118,68 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         if (locationManager == null || !locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            latitudeTextView.setText(R.string.latitude_unavailable);
-            longitudeTextView.setText(R.string.longitude_unavailable);
-            Toast.makeText(this, "Please enable GPS to get your location", Toast.LENGTH_LONG).show();
+            reminderDistanceTextView.setText(R.string.gps_disabled);
+            Toast.makeText(this, "Please enable GPS to monitor reminders", Toast.LENGTH_LONG).show();
             return;
         }
 
-        latitudeTextView.setText(R.string.latitude_loading);
-        longitudeTextView.setText(R.string.longitude_loading);
-
         try {
-            locationManager.getCurrentLocation(
+            Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (lastKnownLocation != null) {
+                checkReminderDistance(lastKnownLocation);
+            }
+
+            locationManager.requestLocationUpdates(
                     LocationManager.GPS_PROVIDER,
-                    null,
-                    getMainExecutor(),
-                    this::displayLocation
+                    5000,
+                    5,
+                    reminderLocationListener
             );
         } catch (SecurityException e) {
-            latitudeTextView.setText(R.string.latitude_permission_denied);
-            longitudeTextView.setText(R.string.longitude_permission_denied);
+            reminderDistanceTextView.setText(R.string.latitude_permission_denied);
         }
     }
 
-    private void displayLocation(Location location) {
-        if (location == null) {
-            latitudeTextView.setText(R.string.latitude_unavailable);
-            longitudeTextView.setText(R.string.longitude_unavailable);
+    private void stopReminderMonitoring() {
+        if (locationManager == null) {
             return;
         }
 
-        latitudeTextView.setText(String.format(Locale.US, "Latitude: %.6f", location.getLatitude()));
-        longitudeTextView.setText(String.format(Locale.US, "Longitude: %.6f", location.getLongitude()));
+        locationManager.removeUpdates(reminderLocationListener);
+    }
+
+    private void checkReminderDistance(Location currentLocation) {
+        double reminderLatitude = ReminderStorage.getLatitude(this);
+        double reminderLongitude = ReminderStorage.getLongitude(this);
+        float[] results = new float[1];
+
+        Location.distanceBetween(
+                currentLocation.getLatitude(),
+                currentLocation.getLongitude(),
+                reminderLatitude,
+                reminderLongitude,
+                results
+        );
+
+        float distance = results[0];
+        reminderDistanceTextView.setText(String.format(
+                Locale.US,
+                "Distance to reminder: %.1f meters",
+                distance
+        ));
+
+        if (distance <= REMINDER_RADIUS_METERS && !reminderDialogShown) {
+            reminderDialogShown = true;
+            showReminderReachedDialog();
+        }
+    }
+
+    private void showReminderReachedDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Reminder reached")
+                .setMessage(ReminderStorage.getTitle(this))
+                .setPositiveButton("OK", null)
+                .show();
     }
 
     @Override
@@ -104,10 +189,9 @@ public class HomeActivity extends AppCompatActivity {
 
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                loadCurrentGpsLocation();
+                startReminderMonitoring();
             } else {
-                latitudeTextView.setText(R.string.latitude_permission_denied);
-                longitudeTextView.setText(R.string.longitude_permission_denied);
+                reminderDistanceTextView.setText(R.string.latitude_permission_denied);
                 Toast.makeText(this, "GPS permission denied", Toast.LENGTH_LONG).show();
             }
         }
