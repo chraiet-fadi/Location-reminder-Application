@@ -2,4 +2,12 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="app_background">#F7FAF8</color>
+    <color name="app_primary">#1B6B4A</color>
+    <color name="app_primary_dark">#124832</color>
+    <color name="app_accent">#2563EB</color>
+    <color name="text_secondary">#5F6F67</color>
+    <color name="surface">#FFFFFFFF</color>
+    <color name="surface_soft">#EEF5F1</color>
+    <color name="input_stroke">#B8C8BF</color>
 </resources>
