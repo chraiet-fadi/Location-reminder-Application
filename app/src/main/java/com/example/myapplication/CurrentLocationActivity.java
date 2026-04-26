@@ -1,6 +1,7 @@
 package com.example.myapplication;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -29,6 +30,8 @@ public class CurrentLocationActivity extends AppCompatActivity {
     private TextView longitudeTextView;
     private WebView mapWebView;
     private LocationManager locationManager;
+    private Double currentLatitude;
+    private Double currentLongitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +49,7 @@ public class CurrentLocationActivity extends AppCompatActivity {
         longitudeTextView = findViewById(R.id.currentLongitudeTextView);
         mapWebView = findViewById(R.id.currentLocationMapWebView);
         Button refreshButton = findViewById(R.id.refreshLocationButton);
+        Button addReminderHereButton = findViewById(R.id.addReminderHereButton);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
         mapWebView.getSettings().setJavaScriptEnabled(true);
@@ -56,6 +60,7 @@ public class CurrentLocationActivity extends AppCompatActivity {
         );
 
         refreshButton.setOnClickListener(v -> loadCurrentGpsLocation());
+        addReminderHereButton.setOnClickListener(v -> openReminderForCurrentLocation());
         loadCurrentGpsLocation();
     }
 
@@ -102,7 +107,21 @@ public class CurrentLocationActivity extends AppCompatActivity {
 
         latitudeTextView.setText(String.format(Locale.US, "Latitude: %.6f", location.getLatitude()));
         longitudeTextView.setText(String.format(Locale.US, "Longitude: %.6f", location.getLongitude()));
+        currentLatitude = location.getLatitude();
+        currentLongitude = location.getLongitude();
         showLocationOnMap(location);
+    }
+
+    private void openReminderForCurrentLocation() {
+        if (currentLatitude == null || currentLongitude == null) {
+            Toast.makeText(this, "Wait for GPS location first", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Intent intent = new Intent(this, AddReminderActivity.class);
+        intent.putExtra(AddReminderActivity.EXTRA_LATITUDE, currentLatitude);
+        intent.putExtra(AddReminderActivity.EXTRA_LONGITUDE, currentLongitude);
+        startActivity(intent);
     }
 
     private void showLocationOnMap(Location location) {

@@ -1,21 +1,43 @@
 package com.example.myapplication;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.util.Locale;
+
 public class AddReminderActivity extends AppCompatActivity {
 
+    public static final String EXTRA_LATITUDE = "extra_latitude";
+    public static final String EXTRA_LONGITUDE = "extra_longitude";
+
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 4001;
+    private static final double DEFAULT_LATITUDE = 34.8504;
+    private static final double DEFAULT_LONGITUDE = 5.7281;
+
     private EditText titleEditText;
-    private EditText latitudeEditText;
-    private EditText longitudeEditText;
+    private TextView selectedLocationTextView;
+    private WebView reminderMapWebView;
+    private LocationManager locationManager;
+    private Double selectedLatitude;
+    private Double selectedLongitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,52 +52,154 @@ public class AddReminderActivity extends AppCompatActivity {
         });
 
         titleEditText = findViewById(R.id.reminderTitleEditText);
-        latitudeEditText = findViewById(R.id.reminderLatitudeEditText);
-        longitudeEditText = findViewById(R.id.reminderLongitudeEditText);
+        selectedLocationTextView = findViewById(R.id.selectedLocationTextView);
+        reminderMapWebView = findViewById(R.id.reminderMapWebView);
+        Button useCurrentLocationButton = findViewById(R.id.useCurrentLocationButton);
         Button saveButton = findViewById(R.id.saveReminderButton);
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
+        configureMap();
+
+        if (getIntent().hasExtra(EXTRA_LATITUDE) && getIntent().hasExtra(EXTRA_LONGITUDE)) {
+            selectLocation(
+                    getIntent().getDoubleExtra(EXTRA_LATITUDE, DEFAULT_LATITUDE),
+                    getIntent().getDoubleExtra(EXTRA_LONGITUDE, DEFAULT_LONGITUDE)
+            );
+        } else {
+            loadMap(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
+        }
+
+        useCurrentLocationButton.setOnClickListener(v -> useCurrentGpsLocation());
         saveButton.setOnClickListener(v -> saveReminder());
+    }
+
+    private void configureMap() {
+        reminderMapWebView.getSettings().setJavaScriptEnabled(true);
+        reminderMapWebView.addJavascriptInterface(new MapBridge(), "Android");
+    }
+
+    private void loadMap(double latitude, double longitude) {
+        String html = String.format(Locale.US,
+                "<!DOCTYPE html>" +
+                        "<html>" +
+                        "<head>" +
+                        "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+                        "<link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css' />" +
+                        "<script src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'></script>" +
+                        "<style>html, body, #map { height: 100%%; margin: 0; padding: 0; }</style>" +
+                        "</head>" +
+                        "<body>" +
+                        "<div id='map'></div>" +
+                        "<script>" +
+                        "var map = L.map('map').setView([%.6f, %.6f], 15);" +
+                        "L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {" +
+                        "maxZoom: 19, attribution: 'OpenStreetMap'}).addTo(map);" +
+                        "var marker = L.marker([%.6f, %.6f], { draggable: true }).addTo(map);" +
+                        "function sendLocation(latlng) { Android.onLocationSelected(latlng.lat, latlng.lng); }" +
+                        "marker.on('dragend', function(e) { sendLocation(e.target.getLatLng()); });" +
+                        "map.on('click', function(e) { marker.setLatLng(e.latlng); sendLocation(e.latlng); });" +
+                        "</script>" +
+                        "</body>" +
+                        "</html>",
+                latitude, longitude, latitude, longitude);
+
+        reminderMapWebView.loadDataWithBaseURL("https://www.openstreetmap.org/", html, "text/html", "UTF-8", null);
+    }
+
+    private void useCurrentGpsLocation() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE
+            );
+            return;
+        }
+
+        if (locationManager == null || !locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            Toast.makeText(this, "Please enable GPS to use your current location", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        try {
+            locationManager.getCurrentLocation(
+                    LocationManager.GPS_PROVIDER,
+                    null,
+                    getMainExecutor(),
+                    this::handleCurrentLocation
+            );
+        } catch (SecurityException e) {
+            Toast.makeText(this, "GPS permission denied", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void handleCurrentLocation(Location location) {
+        if (location == null) {
+            Toast.makeText(this, "Current location is unavailable", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        selectLocation(location.getLatitude(), location.getLongitude());
+    }
+
+    private void selectLocation(double latitude, double longitude) {
+        selectedLatitude = latitude;
+        selectedLongitude = longitude;
+        selectedLocationTextView.setText(String.format(
+                Locale.US,
+                "Selected location\nLatitude: %.6f\nLongitude: %.6f",
+                latitude,
+                longitude
+        ));
+        loadMap(latitude, longitude);
     }
 
     private void saveReminder() {
         String title = titleEditText.getText().toString().trim();
-        String latitudeText = latitudeEditText.getText().toString().trim();
-        String longitudeText = longitudeEditText.getText().toString().trim();
 
         if (title.isEmpty()) {
             titleEditText.setError("Enter reminder title");
             return;
         }
 
-        if (latitudeText.isEmpty()) {
-            latitudeEditText.setError("Enter latitude");
+        if (selectedLatitude == null || selectedLongitude == null) {
+            Toast.makeText(this, "Choose a location on the map first", Toast.LENGTH_LONG).show();
             return;
         }
 
-        if (longitudeText.isEmpty()) {
-            longitudeEditText.setError("Enter longitude");
-            return;
+        ReminderStorage.saveReminder(this, title, selectedLatitude, selectedLongitude);
+        Toast.makeText(this, "Reminder saved", Toast.LENGTH_SHORT).show();
+        finish();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                useCurrentGpsLocation();
+            } else {
+                Toast.makeText(this, "GPS permission denied", Toast.LENGTH_LONG).show();
+            }
         }
+    }
 
-        try {
-            double latitude = Double.parseDouble(latitudeText);
-            double longitude = Double.parseDouble(longitudeText);
-
-            if (latitude < -90 || latitude > 90) {
-                latitudeEditText.setError("Latitude must be between -90 and 90");
-                return;
-            }
-
-            if (longitude < -180 || longitude > 180) {
-                longitudeEditText.setError("Longitude must be between -180 and 180");
-                return;
-            }
-
-            ReminderStorage.saveReminder(this, title, latitude, longitude);
-            Toast.makeText(this, "Reminder saved", Toast.LENGTH_SHORT).show();
-            finish();
-        } catch (NumberFormatException e) {
-            Toast.makeText(this, "Latitude and longitude must be numbers", Toast.LENGTH_LONG).show();
+    private class MapBridge {
+        @JavascriptInterface
+        public void onLocationSelected(double latitude, double longitude) {
+            runOnUiThread(() -> {
+                selectedLatitude = latitude;
+                selectedLongitude = longitude;
+                selectedLocationTextView.setText(String.format(
+                        Locale.US,
+                        "Selected location\nLatitude: %.6f\nLongitude: %.6f",
+                        latitude,
+                        longitude
+                ));
+            });
         }
     }
 }
