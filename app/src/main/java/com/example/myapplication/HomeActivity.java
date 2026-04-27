@@ -79,6 +79,7 @@ public class HomeActivity extends AppCompatActivity {
         reminderDistanceTextView = findViewById(R.id.reminderDistanceTextView);
         Button addReminderButton = findViewById(R.id.addReminderButton);
         Button currentLocationButton = findViewById(R.id.currentLocationButton);
+        Button logoutButton = findViewById(R.id.logoutButton);
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         createReminderNotificationChannel();
@@ -93,6 +94,12 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(new Intent(HomeActivity.this, AddReminderActivity.class)));
         currentLocationButton.setOnClickListener(v ->
                 startActivity(new Intent(HomeActivity.this, CurrentLocationActivity.class)));
+        logoutButton.setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        });
     }
 
     @Override

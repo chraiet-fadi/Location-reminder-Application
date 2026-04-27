@@ -71,6 +71,20 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/addReminderButton" />
 
+        <Button
+            android:id="@+id/logoutButton"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="14dp"
+            android:backgroundTint="@color/app_primary_dark"
+            android:text="Log Out"
+            android:textAllCaps="false"
+            android:textSize="17sp"
+            app:cornerRadius="10dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/currentLocationButton" />
+
         <TextView
             android:id="@+id/reminderStatusTextView"
             android:layout_width="0dp"
@@ -85,7 +99,7 @@
             android:textSize="17sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/currentLocationButton" />
+            app:layout_constraintTop_toBottomOf="@id/logoutButton" />
 
         <TextView
             android:id="@+id/reminderDistanceTextView"
