@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
         CheckBox rememberMeCheckBox = findViewById(R.id.checkBox);
         Button btnLogin = findViewById(R.id.btnLogin);
         Button btnCreateAccount = findViewById(R.id.btnCreateAccount);
+        TextView forgotPasswordText = findViewById(R.id.forgotPasswordText);
 
         if (LocalAccountStorage.isRememberMeEnabled(this)) {
             rememberMeCheckBox.setChecked(true);
@@ -63,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
 
         btnCreateAccount.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, CreateAccountActivity.class)));
+        forgotPasswordText.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, ForgotPasswordActivity.class)));
     }
 
     private boolean validateCredentials(EditText emailEditText, EditText passwordEditText,

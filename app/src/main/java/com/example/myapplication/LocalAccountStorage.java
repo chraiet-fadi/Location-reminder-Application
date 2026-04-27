@@ -29,6 +29,11 @@ public class LocalAccountStorage {
         return email.equals(savedEmail) && password.equals(savedPassword);
     }
 
+    public static boolean isSavedEmail(Context context, String email) {
+        String savedEmail = getPreferences(context).getString(KEY_ACCOUNT_EMAIL, "");
+        return email.equals(savedEmail);
+    }
+
     public static boolean isRememberMeEnabled(Context context) {
         return getPreferences(context).getBoolean(KEY_REMEMBER_ME, false);
     }
