@@ -18,6 +18,9 @@
             android:name=".CurrentLocationActivity"
             android:exported="false" />
         <activity
+            android:name=".ReminderMapActivity"
+            android:exported="false" />
+        <activity
             android:name=".AddReminderActivity"
             android:exported="false" />
         <activity

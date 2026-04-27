@@ -11,8 +11,10 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,7 +30,10 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -41,9 +46,10 @@ public class HomeActivity extends AppCompatActivity {
 
     private TextView reminderStatusTextView;
     private TextView reminderDistanceTextView;
+    private LinearLayout remindersListLayout;
     private LocationManager locationManager;
-    private boolean reminderDialogShown;
-    private boolean reminderNotificationShown;
+    private final Set<String> dialogReminderIds = new HashSet<>();
+    private final Set<String> notificationReminderIds = new HashSet<>();
 
     private final LocationListener reminderLocationListener = new LocationListener() {
         @Override
@@ -77,6 +83,7 @@ public class HomeActivity extends AppCompatActivity {
         TextView welcomeTextView = findViewById(R.id.welcomeTextView);
         reminderStatusTextView = findViewById(R.id.reminderStatusTextView);
         reminderDistanceTextView = findViewById(R.id.reminderDistanceTextView);
+        remindersListLayout = findViewById(R.id.remindersListLayout);
         Button addReminderButton = findViewById(R.id.addReminderButton);
         Button currentLocationButton = findViewById(R.id.currentLocationButton);
         Button logoutButton = findViewById(R.id.logoutButton);
@@ -105,8 +112,6 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        reminderDialogShown = false;
-        reminderNotificationShown = false;
         updateReminderStatus();
         startReminderMonitoring();
     }
@@ -121,17 +126,50 @@ public class HomeActivity extends AppCompatActivity {
         if (!ReminderStorage.hasReminder(this)) {
             reminderStatusTextView.setText(R.string.no_reminder_saved);
             reminderDistanceTextView.setText(R.string.distance_waiting);
+            remindersListLayout.removeAllViews();
             return;
         }
 
-        reminderStatusTextView.setText(String.format(
-                Locale.US,
-                "Saved reminder: %s\nLatitude: %.6f\nLongitude: %.6f",
-                ReminderStorage.getTitle(this),
-                ReminderStorage.getLatitude(this),
-                ReminderStorage.getLongitude(this)
-        ));
+        List<ReminderStorage.Reminder> reminders = ReminderStorage.getReminders(this);
+        reminderStatusTextView.setText(String.format(Locale.US, "Saved reminders: %d", reminders.size()));
+        renderSavedReminders(reminders);
         reminderDistanceTextView.setText(R.string.distance_waiting);
+    }
+
+    private void renderSavedReminders(List<ReminderStorage.Reminder> reminders) {
+        remindersListLayout.removeAllViews();
+
+        for (ReminderStorage.Reminder reminder : reminders) {
+            TextView reminderView = new TextView(this);
+            reminderView.setText(String.format(
+                    Locale.US,
+                    "%s\nLatitude: %.6f\nLongitude: %.6f",
+                    reminder.getTitle(),
+                    reminder.getLatitude(),
+                    reminder.getLongitude()
+            ));
+            reminderView.setTextColor(ContextCompat.getColor(this, R.color.app_primary_dark));
+            reminderView.setTextSize(16);
+            reminderView.setGravity(Gravity.CENTER);
+            reminderView.setLineSpacing(4, 1);
+            reminderView.setPadding(18, 18, 18, 18);
+            reminderView.setBackgroundResource(R.drawable.panel_background);
+            reminderView.setClickable(true);
+            reminderView.setOnClickListener(v -> openReminderMap(reminder.getId()));
+
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            layoutParams.setMargins(0, 0, 0, 14);
+            remindersListLayout.addView(reminderView, layoutParams);
+        }
+    }
+
+    private void openReminderMap(String reminderId) {
+        Intent intent = new Intent(this, ReminderMapActivity.class);
+        intent.putExtra(ReminderMapActivity.EXTRA_REMINDER_ID, reminderId);
+        startActivity(intent);
     }
 
     private void startReminderMonitoring() {
@@ -231,34 +269,47 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void checkReminderDistance(Location currentLocation) {
-        double reminderLatitude = ReminderStorage.getLatitude(this);
-        double reminderLongitude = ReminderStorage.getLongitude(this);
+        List<ReminderStorage.Reminder> reminders = ReminderStorage.getReminders(this);
+        ReminderStorage.Reminder closestReminder = null;
+        float closestDistance = Float.MAX_VALUE;
         float[] results = new float[1];
 
-        Location.distanceBetween(
-                currentLocation.getLatitude(),
-                currentLocation.getLongitude(),
-                reminderLatitude,
-                reminderLongitude,
-                results
-        );
+        for (ReminderStorage.Reminder reminder : reminders) {
+            Location.distanceBetween(
+                    currentLocation.getLatitude(),
+                    currentLocation.getLongitude(),
+                    reminder.getLatitude(),
+                    reminder.getLongitude(),
+                    results
+            );
 
-        float distance = results[0];
+            float distance = results[0];
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestReminder = reminder;
+            }
+
+            if (distance <= REMINDER_NOTIFICATION_RADIUS_METERS
+                    && notificationReminderIds.add(reminder.getId())) {
+                showNearReminderNotification(reminder, distance);
+            }
+
+            if (distance <= REMINDER_RADIUS_METERS && dialogReminderIds.add(reminder.getId())) {
+                showReminderReachedDialog(reminder);
+            }
+        }
+
+        if (closestReminder == null) {
+            reminderDistanceTextView.setText(R.string.distance_waiting);
+            return;
+        }
+
         reminderDistanceTextView.setText(String.format(
                 Locale.US,
-                "Distance to reminder: %.1f meters",
-                distance
+                "Closest reminder: %s\nDistance: %.1f meters",
+                closestReminder.getTitle(),
+                closestDistance
         ));
-
-        if (distance <= REMINDER_NOTIFICATION_RADIUS_METERS && !reminderNotificationShown) {
-            reminderNotificationShown = true;
-            showNearReminderNotification(distance);
-        }
-
-        if (distance <= REMINDER_RADIUS_METERS && !reminderDialogShown) {
-            reminderDialogShown = true;
-            showReminderReachedDialog();
-        }
     }
 
     private void createReminderNotificationChannel() {
@@ -294,28 +345,28 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    private void showNearReminderNotification(float distance) {
+    private void showNearReminderNotification(ReminderStorage.Reminder reminder, float distance) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED) {
             return;
         }
 
-        Intent intent = new Intent(this, HomeActivity.class);
+        Intent intent = new Intent(this, ReminderMapActivity.class);
+        intent.putExtra(ReminderMapActivity.EXTRA_REMINDER_ID, reminder.getId());
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 this,
-                0,
+                reminder.getId().hashCode(),
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
-        String reminderTitle = ReminderStorage.getTitle(this);
         String content = String.format(
                 Locale.US,
                 "You are %.0f meters from: %s",
                 distance,
-                reminderTitle
+                reminder.getTitle()
         );
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, REMINDER_CHANNEL_ID)
@@ -327,13 +378,14 @@ public class HomeActivity extends AppCompatActivity {
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true);
 
-        NotificationManagerCompat.from(this).notify(REMINDER_NEAR_NOTIFICATION_ID, builder.build());
+        NotificationManagerCompat.from(this)
+                .notify(REMINDER_NEAR_NOTIFICATION_ID + Math.abs(reminder.getId().hashCode()), builder.build());
     }
 
-    private void showReminderReachedDialog() {
+    private void showReminderReachedDialog(ReminderStorage.Reminder reminder) {
         new AlertDialog.Builder(this)
                 .setTitle("Reminder reached")
-                .setMessage(ReminderStorage.getTitle(this))
+                .setMessage(reminder.getTitle())
                 .setPositiveButton("OK", null)
                 .show();
     }
