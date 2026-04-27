@@ -2,8 +2,6 @@ package com.example.myapplication;
 
 import android.os.Bundle;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.util.Patterns;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,15 +16,7 @@ import com.example.myapplication.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String PREFS_NAME = "account_prefs";
-    private static final String KEY_ACCOUNT_EMAIL = "account_email";
-    private static final String KEY_ACCOUNT_PASSWORD = "account_password";
-    private static final String KEY_REMEMBER_ME = "remember_me";
-    private static final String KEY_REMEMBERED_EMAIL = "remembered_email";
-    private static final String KEY_REMEMBERED_PASSWORD = "remembered_password";
-
     private ActivityMainBinding binding;
-    private SharedPreferences accountPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,12 +30,11 @@ public class MainActivity extends AppCompatActivity {
         CheckBox rememberMeCheckBox = findViewById(R.id.checkBox);
         Button btnLogin = findViewById(R.id.btnLogin);
         Button btnCreateAccount = findViewById(R.id.btnCreateAccount);
-        accountPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
-        if (accountPreferences.getBoolean(KEY_REMEMBER_ME, false)) {
+        if (LocalAccountStorage.isRememberMeEnabled(this)) {
             rememberMeCheckBox.setChecked(true);
-            userEmail.setText(accountPreferences.getString(KEY_REMEMBERED_EMAIL, ""));
-            userPassword.setText(accountPreferences.getString(KEY_REMEMBERED_PASSWORD, ""));
+            userEmail.setText(LocalAccountStorage.getRememberedEmail(this));
+            userPassword.setText(LocalAccountStorage.getRememberedPassword(this));
         }
 
         btnLogin.setOnClickListener(new View.OnClickListener() {
@@ -57,34 +46,23 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                String savedEmail = accountPreferences.getString(KEY_ACCOUNT_EMAIL, "");
-                String savedPassword = accountPreferences.getString(KEY_ACCOUNT_PASSWORD, "");
-                if (!email.equals(savedEmail) || !password.equals(savedPassword)) {
+                if (!LocalAccountStorage.isValidAccount(MainActivity.this, email, password)) {
                     Toast.makeText(MainActivity.this, "Create an account first or check your login details", Toast.LENGTH_LONG).show();
                     return;
                 }
 
-                saveRememberMeChoice(rememberMeCheckBox.isChecked(), email, password);
+                LocalAccountStorage.saveRememberMeChoice(
+                        MainActivity.this,
+                        rememberMeCheckBox.isChecked(),
+                        email,
+                        password
+                );
                 openHome(email);
             }
         });
 
-        btnCreateAccount.setOnClickListener(v -> {
-            String email = userEmail.getText().toString().trim();
-            String password = userPassword.getText().toString();
-
-            if (!validateCredentials(userEmail, userPassword, email, password)) {
-                return;
-            }
-
-            accountPreferences.edit()
-                    .putString(KEY_ACCOUNT_EMAIL, email)
-                    .putString(KEY_ACCOUNT_PASSWORD, password)
-                    .apply();
-            saveRememberMeChoice(rememberMeCheckBox.isChecked(), email, password);
-            Toast.makeText(this, "Account created", Toast.LENGTH_SHORT).show();
-            openHome(email);
-        });
+        btnCreateAccount.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, CreateAccountActivity.class)));
     }
 
     private boolean validateCredentials(EditText emailEditText, EditText passwordEditText,
@@ -94,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
 
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        if (!CredentialValidator.isValidEmail(email)) {
             emailEditText.setError("Enter a valid Email");
             return false;
         }
@@ -104,34 +82,12 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
 
-        if (!isStrongPassword(password)) {
+        if (!CredentialValidator.isStrongPassword(password)) {
             passwordEditText.setError("Password must be 8+ chars with letters, numbers, and symbols");
             return false;
         }
 
         return true;
-    }
-
-    private boolean isStrongPassword(String password) {
-        return password.length() >= 8
-                && password.matches(".*[A-Za-z].*")
-                && password.matches(".*\\d.*")
-                && password.matches(".*[^A-Za-z0-9].*");
-    }
-
-    private void saveRememberMeChoice(boolean rememberMe, String email, String password) {
-        SharedPreferences.Editor editor = accountPreferences.edit()
-                .putBoolean(KEY_REMEMBER_ME, rememberMe);
-
-        if (rememberMe) {
-            editor.putString(KEY_REMEMBERED_EMAIL, email)
-                    .putString(KEY_REMEMBERED_PASSWORD, password);
-        } else {
-            editor.remove(KEY_REMEMBERED_EMAIL)
-                    .remove(KEY_REMEMBERED_PASSWORD);
-        }
-
-        editor.apply();
     }
 
     private void openHome(String email) {
