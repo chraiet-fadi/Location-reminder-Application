@@ -1,0 +1,254 @@
+شرح مشروع Location Reminder Application
+======================================
+
+اسم المشروع:
+Location Reminder Application
+
+فكرة المشروع باختصار:
+هذا تطبيق Android مكتوب بلغة Java. فكرته هي إنشاء تذكيرات مرتبطة بموقع جغرافي. المستخدم يدخل إلى التطبيق بحساب محلي، ثم يستطيع حفظ تذكير مع عنوان وإحداثيات GPS. بعد ذلك التطبيق يراقب موقع المستخدم الحالي، وعندما يصبح المستخدم قريبا من موقع التذكير، يظهر له تنبيه.
+
+كيف أشرح المشروع للأستاذ:
+أقول إن التطبيق يجمع بين عدة مفاهيم في تطوير تطبيقات الهاتف:
+1. واجهات Android باستعمال XML.
+2. التنقل بين الشاشات باستعمال Activities و Intents.
+3. قراءة موقع GPS باستعمال LocationManager.
+4. طلب صلاحيات الموقع والإشعارات Runtime Permissions.
+5. تخزين البيانات محليا باستعمال SharedPreferences.
+6. عرض الخرائط باستعمال WebView مع OpenStreetMap.
+7. حساب المسافة بين موقع المستخدم وموقع التذكير باستعمال Location.distanceBetween.
+8. تحسين تجربة المستخدم بإضافة شريط تنقل سفلي Bottom Navigation مثل التطبيقات الحديثة.
+
+
+حالة المشروع الحالية
+====================
+
+في النسخة الحالية التطبيق يحتوي على:
+- شاشة تسجيل الدخول.
+- شاشة إنشاء حساب جديد.
+- شاشة استرجاع كلمة المرور.
+- شاشة رئيسية Home.
+- شاشة إضافة تذكير.
+- شاشة عرض الموقع الحالي GPS.
+- شاشة خريطة لعرض التذكيرات المحفوظة.
+- دعم أكثر من تذكير محفوظ.
+- تنبيه عندما يقترب المستخدم من موقع التذكير.
+- شريط تنقل سفلي في الصفحة الرئيسية يحتوي على:
+  Saved: للرجوع إلى قائمة التذكيرات المحفوظة.
+  Add: لفتح شاشة إضافة تذكير.
+  GPS: لفتح شاشة الموقع الحالي.
+  Logout: لتسجيل الخروج.
+
+
+أهم الملفات في المشروع
+======================
+
+app/src/main/java/com/example/myapplication/MainActivity.java
+هذه هي شاشة الدخول. تتحقق من بيانات المستخدم وتفتح HomeActivity إذا كانت البيانات صحيحة. كما تحتوي على روابط لإنشاء حساب جديد أو استرجاع كلمة المرور.
+
+app/src/main/java/com/example/myapplication/HomeActivity.java
+هذه هي الشاشة الرئيسية. تعرض الترحيب بالمستخدم، تعرض حالة التذكيرات المحفوظة، تعرض المسافة إلى التذكير، وتراقب موقع المستخدم. في آخر تعديل تم استبدال الأزرار الكبيرة بشريط تنقل سفلي.
+
+app/src/main/java/com/example/myapplication/AddReminderActivity.java
+هذه الشاشة تسمح للمستخدم بإدخال عنوان التذكير، خط العرض Latitude، وخط الطول Longitude. تتحقق من صحة الإحداثيات قبل الحفظ.
+
+app/src/main/java/com/example/myapplication/CurrentLocationActivity.java
+هذه الشاشة تعرض الموقع الحالي للمستخدم بالإحداثيات، وتعرضه أيضا على خريطة.
+
+app/src/main/java/com/example/myapplication/ReminderStorage.java
+هذا الملف مسؤول عن حفظ واسترجاع التذكيرات من SharedPreferences. في البداية كان التطبيق يدعم تذكيرا واحدا، ثم تطور ليحفظ عدة تذكيرات.
+
+app/src/main/java/com/example/myapplication/ReminderMapActivity.java
+هذه الشاشة تعرض تذكيرا محفوظا على الخريطة. يتم فتحها عندما يضغط المستخدم على تذكير من القائمة.
+
+app/src/main/java/com/example/myapplication/LocalAccountStorage.java
+هذا الملف مسؤول عن حفظ حسابات المستخدمين محليا.
+
+app/src/main/java/com/example/myapplication/CredentialValidator.java
+هذا الملف يحتوي منطق التحقق من صحة اسم المستخدم وكلمة المرور.
+
+app/src/main/AndroidManifest.xml
+هذا الملف يعرف Activities والصلاحيات. من أهم الصلاحيات:
+ACCESS_FINE_LOCATION لقراءة GPS بدقة.
+ACCESS_COARSE_LOCATION لقراءة موقع تقريبي.
+INTERNET لتحميل OpenStreetMap داخل WebView.
+POST_NOTIFICATIONS لإرسال إشعار عند الاقتراب من موقع التذكير في إصدارات Android الحديثة.
+
+
+شرح تطور المشروع حسب Git commits
+================================
+
+1c05b20 - Initial commit - 2026-04-26
+هذه أول نسخة من المشروع. تم فيها إنشاء مشروع Android الأساسي باستعمال Gradle. احتوت على ملفات البناء build.gradle.kts و settings.gradle.kts و Gradle wrapper، وملفات Android الأساسية مثل AndroidManifest.xml وملفات الواجهة الأولى. في هذه المرحلة كان المشروع عبارة عن هيكل تطبيق Android مع شاشة دخول وشاشة Home بسيطة.
+
+9e14791 - Show GPS coordinates on home screen - 2026-04-26
+في هذا التعديل بدأت وظيفة GPS. تم تعديل HomeActivity و MainActivity و activity_home.xml و strings.xml حتى يستطيع التطبيق عرض إحداثيات GPS على الشاشة الرئيسية. هذه الخطوة مهمة لأنها أول استعمال لفكرة الموقع الجغرافي داخل التطبيق.
+
+6a82292 - Build location reminder flow - 2026-04-26
+في هذا التعديل أصبح التطبيق يملك مسار تذكير حقيقي. تمت إضافة:
+AddReminderActivity.java لإضافة تذكير.
+CurrentLocationActivity.java لعرض الموقع الحالي.
+ReminderStorage.java لحفظ التذكير محليا.
+activity_add_reminder.xml و activity_current_location.xml كواجهات جديدة.
+كما تم تعديل AndroidManifest.xml لتعريف الشاشات الجديدة. هذه الخطوة حولت التطبيق من عرض GPS فقط إلى تطبيق تذكيرات يعتمد على الموقع.
+
+316a6b4 - Show current location on map - 2026-04-26
+في هذا التعديل تم تحسين شاشة الموقع الحالي حتى تعرض الموقع على خريطة. تم تعديل CurrentLocationActivity و activity_current_location.xml، مع تعديل AndroidManifest.xml. الفكرة التقنية هنا هي استعمال WebView لتحميل خريطة OpenStreetMap.
+
+18d2c65 - Improve location reminder UI - 2026-04-26
+هذا تعديل خاص بالتصميم. تمت إضافة ملفات drawable مثل:
+input_background.xml
+map_panel_background.xml
+panel_background.xml
+وتم تعديل ألوان التطبيق وواجهات login و home و add reminder و current location. الهدف كان جعل الواجهة أوضح وأجمل بدلا من الشكل الافتراضي.
+
+7921a09 - emm i just remember the README - 2026-04-26
+في هذه الخطوة تمت إضافة README.md. هذا الملف يشرح فكرة المشروع وميزاته والملفات المهمة. وجود README مهم لأنه يعطي للأستاذ أو أي قارئ فكرة سريعة عن المشروع بدون فتح الكود.
+
+0da8461 - Add map based reminder selection - 2026-04-26
+في هذا التعديل تم تحسين طريقة اختيار موقع التذكير باستعمال الخريطة. تم تعديل AddReminderActivity و CurrentLocationActivity وواجهاتهما. بدلا من الاعتماد فقط على كتابة الإحداثيات يدويا، أصبح الاتجاه العام للتطبيق أقرب إلى تجربة اختيار الموقع من الخريطة.
+
+3707324 - Fix map loading and location fallback - 2026-04-26
+هذا التعديل أصلح مشاكل تحميل الخريطة ومشاكل عدم توفر GPS. في التطبيقات الواقعية الموقع قد لا يكون متاحا دائما، لذلك تمت إضافة fallback حتى يحاول التطبيق استعمال أفضل موقع معروف أو مزود موقع بديل مثل Network Provider عند الحاجة.
+
+542c3da - Notify when near reminder location - 2026-04-26
+في هذه الخطوة أضيفت وظيفة التنبيه عند الاقتراب من موقع التذكير. تم تعديل HomeActivity و AndroidManifest.xml. التطبيق ينشئ NotificationChannel في Android الحديث، ويحسب المسافة بين الموقع الحالي وموقع التذكير. إذا أصبح المستخدم داخل مجال قريب، يظهر Dialog أو Notification حسب الحالة.
+
+81fb9dd - Add local account login flow - 2026-04-27
+في هذا التعديل أصبحت شاشة الدخول أكثر واقعية. تم تعديل MainActivity و HomeActivity وواجهات login و home. التطبيق صار يمرر معرف المستخدم إلى HomeActivity حتى يظهر ترحيب مثل Welcome username.
+
+52442e6 - Support multiple saved reminders - 2026-04-27
+هذه خطوة مهمة جدا. قبلها كان التطبيق يتعامل مع تذكير واحد فقط. في هذا التعديل أصبح يدعم عدة تذكيرات محفوظة. تمت إضافة ReminderMapActivity.java و activity_reminder_map.xml، وتم تعديل ReminderStorage و HomeActivity. الآن HomeActivity تعرض قائمة تذكيرات، وكل تذكير يمكن فتحه على الخريطة.
+
+10d0e1a - Move account creation to separate screen - 2026-04-27
+في هذا التعديل تم فصل إنشاء الحساب في شاشة مستقلة. تمت إضافة:
+CreateAccountActivity.java
+CredentialValidator.java
+LocalAccountStorage.java
+activity_create_account.xml
+هذا جعل بنية الحسابات أوضح: شاشة الدخول للدخول، وشاشة إنشاء الحساب للتسجيل.
+
+fbe1161 - Add forgot password screen - 2026-04-27
+في هذا التعديل أضيفت شاشة استرجاع كلمة المرور. تمت إضافة ForgotPasswordActivity.java و activity_forgot_password.xml، وتم تعديل MainActivity و LocalAccountStorage. هذه ميزة إضافية تجعل نظام الحساب المحلي أكثر اكتمالا.
+
+60de681 - Add home bottom navigation - 2026-05-02
+هذا هو آخر تعديل قمت به الآن. طلبت أن لا تبقى Add Reminder و Show Current GPS Location و Log Out كأزرار كبيرة في وسط الشاشة، وأن تكون مثل أغلب التطبيقات داخل شريط تنقل. لذلك تم:
+1. تعديل activity_home.xml:
+   تم تحويل الجذر إلى ConstraintLayout.
+   تم وضع المحتوى داخل ScrollView.
+   تم إضافة BottomNavigationView في أسفل الشاشة.
+   تم حذف الأزرار الكبيرة القديمة من الواجهة.
+2. إضافة home_bottom_navigation_menu.xml:
+   هذا الملف يعرف عناصر الشريط السفلي:
+   Saved
+   Add
+   GPS
+   Logout
+3. إضافة أيقونات vector:
+   ic_nav_saved.xml
+   ic_nav_add.xml
+   ic_nav_location.xml
+   ic_nav_logout.xml
+4. إضافة home_bottom_nav_item.xml:
+   هذا ملف ألوان selector يجعل العنصر المختار بلون أساسي والعناصر الأخرى بلون ثانوي.
+5. تعديل HomeActivity.java:
+   بدلا من findViewById للأزرار القديمة، أصبح الكود يستعمل BottomNavigationView.
+   عند الضغط على Saved يتم تمرير الشاشة إلى قسم التذكيرات المحفوظة.
+   عند الضغط على Add يتم فتح AddReminderActivity.
+   عند الضغط على GPS يتم فتح CurrentLocationActivity.
+   عند الضغط على Logout يتم الرجوع إلى MainActivity ومسح stack باستعمال flags.
+
+
+شرح كيف يعمل التطبيق من الداخل
+==============================
+
+1. تسجيل الدخول
+المستخدم يفتح التطبيق من MainActivity. إذا كان لديه حساب محلي محفوظ، يدخل بياناته. عند نجاح التحقق يتم فتح HomeActivity باستعمال Intent.
+
+2. الصفحة الرئيسية
+HomeActivity هي مركز التطبيق. عند فتحها تستدعي updateReminderStatus لعرض عدد التذكيرات المحفوظة. ثم تستدعي startReminderMonitoring حتى تبدأ مراقبة GPS.
+
+3. إضافة تذكير
+عندما يضغط المستخدم على Add في شريط التنقل، يفتح التطبيق AddReminderActivity. المستخدم يكتب العنوان والإحداثيات. بعد التحقق من القيم، يتم حفظ التذكير في SharedPreferences عن طريق ReminderStorage.
+
+4. عرض التذكيرات
+عند الرجوع إلى HomeActivity، يتم قراءة التذكيرات من ReminderStorage. يتم إنشاء TextView لكل تذكير داخل remindersListLayout. عند الضغط على تذكير، يفتح التطبيق ReminderMapActivity لعرضه على الخريطة.
+
+5. عرض الموقع الحالي
+عندما يضغط المستخدم على GPS، يفتح التطبيق CurrentLocationActivity. هذه الشاشة تطلب صلاحية الموقع إذا لم تكن موجودة، ثم تعرض Latitude و Longitude، وتحمل خريطة.
+
+6. مراقبة الاقتراب من التذكير
+HomeActivity يستعمل LocationManager لطلب تحديثات الموقع. كلما تغير الموقع يتم استدعاء checkReminderDistance. هذه الدالة تقارن موقع المستخدم مع كل تذكير محفوظ. إذا كان المستخدم قريبا من التذكير، يظهر تنبيه.
+
+7. تسجيل الخروج
+عندما يضغط المستخدم على Logout، يفتح التطبيق MainActivity مع:
+Intent.FLAG_ACTIVITY_NEW_TASK
+Intent.FLAG_ACTIVITY_CLEAR_TASK
+هذا يمنع المستخدم من الرجوع إلى HomeActivity بزر Back بعد تسجيل الخروج.
+
+
+لماذا شريط التنقل السفلي أفضل من الأزرار القديمة؟
+=================================================
+
+قبل التعديل كانت الصفحة الرئيسية تعرض الأوامر الرئيسية كأزرار كبيرة:
+Add Reminder
+Show Current GPS Location
+Log Out
+
+هذا يعمل تقنيا، لكنه يجعل الصفحة تبدو مثل نموذج بسيط وليس مثل تطبيق حديث. في التطبيقات الحديثة مثل Google Maps أو Gmail أو تطبيقات الملاحظات، التنقل الأساسي غالبا يكون في الأسفل حتى يستطيع المستخدم الوصول إليه بسرعة.
+
+بعد التعديل:
+- الصفحة الرئيسية أصبحت تركز على محتوى التذكيرات.
+- الأوامر الأساسية أصبحت ثابتة في الأسفل.
+- المستخدم يستطيع إضافة تذكير أو فتح GPS أو تسجيل الخروج من نفس المكان دائما.
+- الواجهة أصبحت أقرب إلى تطبيق Android حقيقي.
+
+
+نقاط تقنية أستطيع ذكرها للأستاذ
+===============================
+
+- استعملت SharedPreferences لأن البيانات بسيطة ومحلية ولا تحتاج قاعدة بيانات كبيرة.
+- استعملت LocationManager لأنه يوفر الوصول المباشر إلى GPS و Network Provider.
+- استعملت Runtime Permissions لأن Android لا يسمح باستعمال الموقع أو الإشعارات بدون موافقة المستخدم.
+- استعملت Intent للتنقل بين الشاشات لأن كل وظيفة كبيرة وضعتها في Activity مستقلة.
+- استعملت BottomNavigationView من Material Components لأنه عنصر جاهز ومناسب لشريط التنقل السفلي.
+- استعملت Vector Drawables للأيقونات لأنها خفيفة وتتكيف مع مختلف أحجام الشاشات.
+- استعملت OpenStreetMap داخل WebView حتى أعرض الخريطة بدون الاعتماد على Google Maps API key.
+
+
+كيف تم التحقق من آخر تعديل
+==========================
+
+بعد تعديل الواجهة وربط شريط التنقل، شغلت الأمر:
+./gradlew assembleDebug
+
+في البداية ظهر خطأ لأن HomeActivity كان ما زال يبحث عن الأزرار القديمة التي حذفتها من XML. أصلحت ذلك باستعمال BottomNavigationView.
+
+ثم ظهر خطأ في ملفات vector icons بسبب اسم خاصية غير صحيح:
+android:strokeLineWidth
+
+الصحيح في Android هو:
+android:strokeWidth
+
+بعد التصحيح، اشتغل البناء بنجاح:
+BUILD SUCCESSFUL
+
+
+حالة Git الحالية
+================
+
+آخر commit هو:
+60de681 Add home bottom navigation
+
+تم عمل push إلى GitHub:
+https://github.com/chraiet-fadi/Location-reminder-Application.git
+
+ملاحظة:
+يوجد في working tree ملفات صور غير متتبعة داخل app/src/main/res/drawable. لم أضفها إلى commit لأنها كانت موجودة قبل هذا العمل وليست جزءا من تعديل شريط التنقل.
+
+
+خلاصة قصيرة للتقديم الشفهي
+==========================
+
+يمكنني شرح المشروع هكذا:
+
+هذا التطبيق هو Location Reminder. المستخدم يسجل الدخول أو ينشئ حسابا محليا. بعد الدخول يستطيع إنشاء تذكير مرتبط بموقع GPS، إما بإدخال الإحداثيات أو باستعمال الخريطة حسب الشاشة. التطبيق يخزن التذكيرات محليا، يعرضها في الصفحة الرئيسية، ويستعمل GPS لمراقبة موقع المستخدم. عندما يصبح المستخدم قريبا من موقع التذكير، يعرض التطبيق تنبيها. استعملت Activities و Intents للتنقل، SharedPreferences للتخزين المحلي، LocationManager لجلب الموقع، WebView مع OpenStreetMap للخرائط، و BottomNavigationView لتحسين الواجهة وجعلها مثل التطبيقات الحديثة.
