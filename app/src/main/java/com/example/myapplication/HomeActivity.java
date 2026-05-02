@@ -13,8 +13,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +29,8 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.HashSet;
 import java.util.List;
@@ -84,9 +86,8 @@ public class HomeActivity extends AppCompatActivity {
         reminderStatusTextView = findViewById(R.id.reminderStatusTextView);
         reminderDistanceTextView = findViewById(R.id.reminderDistanceTextView);
         remindersListLayout = findViewById(R.id.remindersListLayout);
-        Button addReminderButton = findViewById(R.id.addReminderButton);
-        Button currentLocationButton = findViewById(R.id.currentLocationButton);
-        Button logoutButton = findViewById(R.id.logoutButton);
+        ScrollView homeScrollView = findViewById(R.id.homeScrollView);
+        BottomNavigationView homeBottomNavigation = findViewById(R.id.homeBottomNavigation);
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         createReminderNotificationChannel();
@@ -97,15 +98,33 @@ public class HomeActivity extends AppCompatActivity {
             welcomeTextView.setText(String.format(Locale.US, "Welcome %s", userId));
         }
 
-        addReminderButton.setOnClickListener(v ->
-                startActivity(new Intent(HomeActivity.this, AddReminderActivity.class)));
-        currentLocationButton.setOnClickListener(v ->
-                startActivity(new Intent(HomeActivity.this, CurrentLocationActivity.class)));
-        logoutButton.setOnClickListener(v -> {
-            Intent intent = new Intent(HomeActivity.this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finish();
+        homeBottomNavigation.setSelectedItemId(R.id.nav_saved_reminders);
+        homeBottomNavigation.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_saved_reminders) {
+                homeScrollView.smoothScrollTo(0, reminderStatusTextView.getTop());
+                return true;
+            }
+
+            if (itemId == R.id.nav_add_reminder) {
+                startActivity(new Intent(HomeActivity.this, AddReminderActivity.class));
+                return false;
+            }
+
+            if (itemId == R.id.nav_current_location) {
+                startActivity(new Intent(HomeActivity.this, CurrentLocationActivity.class));
+                return false;
+            }
+
+            if (itemId == R.id.nav_logout) {
+                Intent intent = new Intent(HomeActivity.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+                return true;
+            }
+
+            return false;
         });
     }
 

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_saved_reminders"
+        android:icon="@drawable/ic_nav_saved"
+        android:title="Saved" />
+    <item
+        android:id="@+id/nav_add_reminder"
+        android:icon="@drawable/ic_nav_add"
+        android:title="Add" />
+    <item
+        android:id="@+id/nav_current_location"
+        android:icon="@drawable/ic_nav_location"
+        android:title="GPS" />
+    <item
+        android:id="@+id/nav_logout"
+        android:icon="@drawable/ic_nav_logout"
+        android:title="Logout" />
+</menu>
