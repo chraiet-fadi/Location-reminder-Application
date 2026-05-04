@@ -45,16 +45,28 @@
                 android:textColor="@color/text_secondary"
                 android:textSize="16sp" />
 
-            <EditText
-                android:id="@+id/reminderTitleEditText"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/reminderTitleInputLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="22dp"
                 android:hint="Reminder title"
-                android:background="@drawable/input_background"
-                android:inputType="textCapSentences"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp" />
+                app:boxCornerRadiusBottomEnd="14dp"
+                app:boxCornerRadiusBottomStart="14dp"
+                app:boxCornerRadiusTopEnd="14dp"
+                app:boxCornerRadiusTopStart="14dp"
+                app:boxStrokeColor="@color/app_primary"
+                app:startIconDrawable="@android:drawable/ic_dialog_info">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/reminderTitleEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapSentences"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp" />
+            </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
                 android:id="@+id/selectedLocationTextView"
@@ -81,25 +93,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="20dp"
-                android:backgroundTint="@color/app_accent"
+                android:background="@drawable/secondary_button_background"
                 android:text="Use My Current Location"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
-                android:textSize="16sp"
-                app:cornerRadius="14dp" />
+                android:textSize="16sp" />
 
             <Button
                 android:id="@+id/saveReminderButton"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="12dp"
-                android:backgroundTint="@color/app_primary"
+                android:background="@drawable/primary_button_background"
                 android:text="Save Reminder"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="17sp"
-                android:textStyle="bold"
-                app:cornerRadius="14dp" />
+                android:textStyle="bold" />
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
