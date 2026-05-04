@@ -72,23 +72,25 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="20dp"
-                android:background="@drawable/primary_button_background"
+                android:backgroundTint="@color/app_primary"
                 android:text="Refresh GPS Location"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="17sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:cornerRadius="14dp" />
 
             <Button
                 android:id="@+id/addReminderHereButton"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="12dp"
-                android:background="@drawable/secondary_button_background"
+                android:backgroundTint="@color/app_accent"
                 android:text="Add Reminder Here"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                app:cornerRadius="14dp" />
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

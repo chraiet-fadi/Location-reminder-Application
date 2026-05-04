@@ -144,24 +144,26 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="18dp"
-                android:background="@drawable/primary_button_background"
+                android:backgroundTint="@color/app_primary"
                 android:text="Login"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="17sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:cornerRadius="14dp" />
 
             <Button
                 android:id="@+id/btnCreateAccount"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="12dp"
-                android:background="@drawable/secondary_button_background"
+                android:backgroundTint="@color/app_accent"
                 android:text="Create new account"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:cornerRadius="14dp" />
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
