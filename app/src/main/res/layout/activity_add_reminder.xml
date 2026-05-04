@@ -45,28 +45,16 @@
                 android:textColor="@color/text_secondary"
                 android:textSize="16sp" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/reminderTitleInputLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            <EditText
+                android:id="@+id/reminderTitleEditText"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="56dp"
                 android:layout_marginTop="22dp"
                 android:hint="Reminder title"
-                app:boxCornerRadiusBottomEnd="14dp"
-                app:boxCornerRadiusBottomStart="14dp"
-                app:boxCornerRadiusTopEnd="14dp"
-                app:boxCornerRadiusTopStart="14dp"
-                app:boxStrokeColor="@color/app_primary"
-                app:startIconDrawable="@android:drawable/ic_dialog_info">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/reminderTitleEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textCapSentences"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp" />
-            </com.google.android.material.textfield.TextInputLayout>
+                android:background="@drawable/input_background"
+                android:inputType="textCapSentences"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp" />
 
             <TextView
                 android:id="@+id/selectedLocationTextView"
