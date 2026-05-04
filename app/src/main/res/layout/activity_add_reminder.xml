@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/app_background"
+    android:background="@drawable/app_screen_background"
     android:fillViewport="true"
     tools:context=".AddReminderActivity">
 
@@ -12,102 +12,104 @@
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingStart="28dp"
-        android:paddingEnd="28dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
         android:paddingBottom="40dp">
 
-        <TextView
-            android:id="@+id/addReminderTitleTextView"
+        <LinearLayout
+            android:id="@+id/addReminderContent"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="48dp"
-            android:text="Add Reminder"
-            android:textColor="@color/app_primary_dark"
-            android:textSize="30sp"
-            android:textStyle="bold"
+            android:layout_marginTop="34dp"
+            android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_max="640dp">
 
-        <TextView
-            android:id="@+id/addReminderSubtitleTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Tap the map or use your current GPS position."
-            android:textColor="@color/text_secondary"
-            android:textSize="15sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/addReminderTitleTextView" />
+            <TextView
+                android:id="@+id/addReminderTitleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Add Reminder"
+                android:textColor="@color/app_primary_dark"
+                android:textSize="30sp"
+                android:textStyle="bold" />
 
-        <EditText
-            android:id="@+id/reminderTitleEditText"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_marginTop="28dp"
-            android:background="@drawable/input_background"
-            android:hint="Reminder title"
-            android:inputType="textCapSentences"
-            android:paddingStart="14dp"
-            android:paddingEnd="14dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/addReminderSubtitleTextView" />
+            <TextView
+                android:id="@+id/addReminderSubtitleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Tap the map or use your current GPS position."
+                android:textColor="@color/text_secondary"
+                android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/selectedLocationTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:background="@drawable/panel_background"
-            android:gravity="center"
-            android:lineSpacingExtra="4dp"
-            android:padding="16dp"
-            android:text="No location selected yet."
-            android:textColor="@color/app_primary_dark"
-            android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/reminderTitleEditText" />
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/reminderTitleInputLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:hint="Reminder title"
+                app:boxCornerRadiusBottomEnd="14dp"
+                app:boxCornerRadiusBottomStart="14dp"
+                app:boxCornerRadiusTopEnd="14dp"
+                app:boxCornerRadiusTopStart="14dp"
+                app:boxStrokeColor="@color/app_primary"
+                app:startIconDrawable="@android:drawable/ic_dialog_info">
 
-        <WebView
-            android:id="@+id/reminderMapWebView"
-            android:layout_width="0dp"
-            android:layout_height="320dp"
-            android:layout_marginTop="18dp"
-            android:background="@drawable/map_panel_background"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/selectedLocationTextView" />
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/reminderTitleEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapSentences"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-        <Button
-            android:id="@+id/useCurrentLocationButton"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_marginTop="20dp"
-            android:backgroundTint="@color/app_accent"
-            android:text="Use My Current Location"
-            android:textAllCaps="false"
-            android:textSize="17sp"
-            app:cornerRadius="10dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/reminderMapWebView" />
+            <TextView
+                android:id="@+id/selectedLocationTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/panel_background"
+                android:gravity="center"
+                android:lineSpacingExtra="4dp"
+                android:padding="16dp"
+                android:text="No location selected yet."
+                android:textColor="@color/app_primary_dark"
+                android:textSize="16sp" />
 
-        <Button
-            android:id="@+id/saveReminderButton"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_marginTop="14dp"
-            android:backgroundTint="@color/app_primary"
-            android:text="Save Reminder"
-            android:textAllCaps="false"
-            android:textSize="17sp"
-            app:cornerRadius="10dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/useCurrentLocationButton" />
+            <WebView
+                android:id="@+id/reminderMapWebView"
+                android:layout_width="match_parent"
+                android:layout_height="340dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/map_panel_background" />
 
+            <Button
+                android:id="@+id/useCurrentLocationButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/secondary_button_background"
+                android:text="Use My Current Location"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/saveReminderButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/primary_button_background"
+                android:text="Save Reminder"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+        </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/app_background"
+    android:background="@drawable/app_screen_background"
     android:fillViewport="true"
     tools:context=".CurrentLocationActivity">
 
@@ -12,90 +12,83 @@
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingStart="28dp"
-        android:paddingEnd="28dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
         android:paddingBottom="40dp">
 
-        <TextView
-            android:id="@+id/currentLocationTitleTextView"
+        <LinearLayout
+            android:id="@+id/currentLocationContent"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="48dp"
-            android:text="Current GPS Location"
-            android:textColor="@color/app_primary_dark"
-            android:textSize="30sp"
-            android:textStyle="bold"
+            android:layout_marginTop="34dp"
+            android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_max="640dp">
 
-        <TextView
-            android:id="@+id/currentLatitudeTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="48dp"
-            android:gravity="center"
-            android:background="@drawable/panel_background"
-            android:padding="14dp"
-            android:text="@string/latitude_loading"
-            android:textColor="@color/app_primary_dark"
-            android:textSize="22sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/currentLocationTitleTextView" />
+            <TextView
+                android:id="@+id/currentLocationTitleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Current GPS Location"
+                android:textColor="@color/app_primary_dark"
+                android:textSize="30sp"
+                android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/currentLongitudeTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:gravity="center"
-            android:background="@drawable/panel_background"
-            android:padding="14dp"
-            android:text="@string/longitude_loading"
-            android:textColor="@color/app_primary_dark"
-            android:textSize="22sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/currentLatitudeTextView" />
+            <TextView
+                android:id="@+id/currentLatitudeTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:background="@drawable/panel_background"
+                android:gravity="center"
+                android:padding="16dp"
+                android:text="@string/latitude_loading"
+                android:textColor="@color/app_primary_dark"
+                android:textSize="20sp" />
 
-        <WebView
-            android:id="@+id/currentLocationMapWebView"
-            android:layout_width="0dp"
-            android:layout_height="280dp"
-            android:layout_marginTop="24dp"
-            android:background="@drawable/map_panel_background"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/currentLongitudeTextView" />
+            <TextView
+                android:id="@+id/currentLongitudeTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/panel_background"
+                android:gravity="center"
+                android:padding="16dp"
+                android:text="@string/longitude_loading"
+                android:textColor="@color/app_primary_dark"
+                android:textSize="20sp" />
 
-        <Button
-            android:id="@+id/refreshLocationButton"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_marginTop="24dp"
-            android:text="Refresh GPS Location"
-            android:textAllCaps="false"
-            android:backgroundTint="@color/app_primary"
-            android:textSize="17sp"
-            app:cornerRadius="10dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/currentLocationMapWebView" />
+            <WebView
+                android:id="@+id/currentLocationMapWebView"
+                android:layout_width="match_parent"
+                android:layout_height="320dp"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/map_panel_background" />
 
-        <Button
-            android:id="@+id/addReminderHereButton"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_marginTop="14dp"
-            android:backgroundTint="@color/app_accent"
-            android:text="Add Reminder Here"
-            android:textAllCaps="false"
-            android:textSize="17sp"
-            app:cornerRadius="10dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/refreshLocationButton" />
+            <Button
+                android:id="@+id/refreshLocationButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/primary_button_background"
+                android:text="Refresh GPS Location"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="17sp"
+                android:textStyle="bold" />
 
+            <Button
+                android:id="@+id/addReminderHereButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/secondary_button_background"
+                android:text="Add Reminder Here"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+        </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

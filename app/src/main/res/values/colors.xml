@@ -2,12 +2,16 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="app_background">#F7FAF8</color>
-    <color name="app_primary">#1B6B4A</color>
-    <color name="app_primary_dark">#124832</color>
-    <color name="app_accent">#2563EB</color>
-    <color name="text_secondary">#5F6F67</color>
+    <color name="app_background">#F4F7FB</color>
+    <color name="app_primary">#176B5B</color>
+    <color name="app_primary_dark">#123C4A</color>
+    <color name="app_accent">#2F6FED</color>
+    <color name="app_accent_soft">#E8F0FF</color>
+    <color name="text_secondary">#667085</color>
     <color name="surface">#FFFFFFFF</color>
-    <color name="surface_soft">#EEF5F1</color>
-    <color name="input_stroke">#B8C8BF</color>
+    <color name="surface_soft">#EEF6F4</color>
+    <color name="input_stroke">#D7DEE8</color>
+    <color name="card_stroke">#E3E8EF</color>
+    <color name="warning_soft">#FFF7E6</color>
+    <color name="warning_text">#8A5A00</color>
 </resources>

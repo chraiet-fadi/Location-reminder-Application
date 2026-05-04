@@ -11,6 +11,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.graphics.Typeface;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -169,9 +170,11 @@ public class HomeActivity extends AppCompatActivity {
             ));
             reminderView.setTextColor(ContextCompat.getColor(this, R.color.app_primary_dark));
             reminderView.setTextSize(16);
-            reminderView.setGravity(Gravity.CENTER);
+            reminderView.setGravity(Gravity.CENTER_VERTICAL);
             reminderView.setLineSpacing(4, 1);
-            reminderView.setPadding(18, 18, 18, 18);
+            reminderView.setTypeface(Typeface.DEFAULT_BOLD);
+            int cardPadding = dp(18);
+            reminderView.setPadding(cardPadding, cardPadding, cardPadding, cardPadding);
             reminderView.setBackgroundResource(R.drawable.panel_background);
             reminderView.setClickable(true);
             reminderView.setOnClickListener(v -> openReminderMap(reminder.getId()));
@@ -180,9 +183,13 @@ public class HomeActivity extends AppCompatActivity {
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
             );
-            layoutParams.setMargins(0, 0, 0, 14);
+            layoutParams.setMargins(0, 0, 0, dp(14));
             remindersListLayout.addView(reminderView, layoutParams);
         }
+    }
+
+    private int dp(int value) {
+        return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
     }
 
     private void openReminderMap(String reminderId) {

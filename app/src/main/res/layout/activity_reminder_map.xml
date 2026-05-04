@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/app_background"
+    android:background="@drawable/app_screen_background"
     android:fillViewport="true"
     tools:context=".ReminderMapActivity">
 
@@ -12,47 +12,48 @@
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingStart="28dp"
-        android:paddingEnd="28dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
         android:paddingBottom="40dp">
 
-        <TextView
-            android:id="@+id/reminderMapTitleTextView"
+        <LinearLayout
+            android:id="@+id/reminderMapContent"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="48dp"
-            android:text="Reminder Location"
-            android:textColor="@color/app_primary_dark"
-            android:textSize="30sp"
-            android:textStyle="bold"
+            android:layout_marginTop="34dp"
+            android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_max="640dp">
 
-        <TextView
-            android:id="@+id/reminderMapDetailsTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:background="@drawable/panel_background"
-            android:gravity="center"
-            android:lineSpacingExtra="4dp"
-            android:padding="16dp"
-            android:textColor="@color/app_primary_dark"
-            android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/reminderMapTitleTextView" />
+            <TextView
+                android:id="@+id/reminderMapTitleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Reminder Location"
+                android:textColor="@color/app_primary_dark"
+                android:textSize="30sp"
+                android:textStyle="bold" />
 
-        <WebView
-            android:id="@+id/savedReminderMapWebView"
-            android:layout_width="0dp"
-            android:layout_height="380dp"
-            android:layout_marginTop="18dp"
-            android:background="@drawable/map_panel_background"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/reminderMapDetailsTextView" />
+            <TextView
+                android:id="@+id/reminderMapDetailsTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/panel_background"
+                android:gravity="center"
+                android:lineSpacingExtra="4dp"
+                android:padding="16dp"
+                android:textColor="@color/app_primary_dark"
+                android:textSize="16sp" />
 
+            <WebView
+                android:id="@+id/savedReminderMapWebView"
+                android:layout_width="match_parent"
+                android:layout_height="420dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/map_panel_background" />
+        </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
